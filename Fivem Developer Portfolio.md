@@ -165,6 +165,8 @@ exports.ox_target:addModel(Config.Objects, {
 - **hawkkdown_redzone** - Redzone PvP system
 - **hawkkdown_trap** - Trap house mechanics
 - **Hawkkdown_LoadingScreen** - Custom loading screen
+- **hawkkdown_chains** - Hood-style chain snatching system with wearable props
+- **hawkkdown_gsr** - Gun Powder Residue (GSR) evidence system
 
 **Technical Highlights:**
 
@@ -173,6 +175,89 @@ exports.ox_target:addModel(Config.Objects, {
 - Custom NUI windows
 - Database-driven systems
 - Performance-optimized rendering
+- ox_target integration for modern interactions
+- ox_lib progress bars and notifications
+- Modular design for easy expansion
+
+---
+
+### **7. Hawkkdown Chain Snatching System** (`[Hawkk]/hawkkdown_chains`)
+
+**Type:** Hood-Style Criminal Activity System
+
+**Features:**
+
+- Wearable chain system with visible props attached to player
+- Multiple chain tiers (Fake, Silver, Gold, Diamond, Gang chains)
+- ox_target interaction to snatch chains from other players
+- Success/fail chance system with modifiers (behind target, weapon, running, vehicle)
+- Chain break chance during snatch attempts
+- Snatch and victim reaction animations
+- Cooldown system to prevent spam
+- Anti-abuse checks (combat logging, safezones)
+- Discord webhook logging for chain snatches
+- Sell NPCs for chains with dirty money option
+- Modular design for future expansion (reputation, gang systems, crafting)
+
+**Technical Highlights:**
+
+```lua
+-- Chain prop attachment to player
+AttachEntityToEntity(chainProp, playerPed, chain.bone, 
+    chain.offset.x, chain.offset.y, chain.offset.z,
+    chain.rotation.x, chain.rotation.y, chain.rotation.z,
+    true, true, false, true, 0, true)
+-- Dynamic success chance calculation
+local chance = Config.Snatch.successChance
+if math.abs(angle - heading) < 90 or math.abs(angle - heading) > 270 then
+    chance = chance + Config.Snatch.behindBonus
+end
+```
+
+**Files:** fxmanifest.lua, config.lua, client/main.lua (399 lines), server/main.lua (244 lines), html/
+
+---
+
+### **8. Hawkkdown GSR System** (`[Hawkk]/hawkkdown_gsr`)
+
+**Type:** Evidence & Police Investigation System
+
+**Features:**
+
+- Shooting detection with weapon-based residue levels
+- Different residue amounts per weapon class (pistol = medium, AR = heavy)
+- Suppressor reduces residue by 30%
+- Residue decay over time (5% per minute)
+- Washing system with ox_target (sink, shower, ocean, water bottle)
+- Different washing effectiveness (sink 40%, shower 90%, ocean 70%)
+- Police GSR testing with `/testgsr [playerId]` command
+- GSR test kit item requirement
+- Residue levels (Light, Medium, Heavy) with thresholds
+- Anti-abuse checks (combat, cuffed, dead, spam prevention)
+- Server-side GSR backup decay timer
+- Database persistence for GSR status
+
+**Technical Highlights:**
+
+```lua
+-- Real-time shooting detection
+if IsPedShooting(playerPed) then
+    local weaponData = Config.GSR.weaponClasses[weaponName]
+    local residueAmount = weaponData.amount
+    if hasSuppressor then
+        residueAmount = residueAmount * (1 - Config.GSR.suppressorReduction)
+    end
+    currentGSR = math.min(100, currentGSR + residueAmount)
+end
+-- ox_target washing locations
+exports.ox_target:addSphereZone({
+    coords = location.coords,
+    radius = 1.5,
+    options = {{name = 'wash_sink', icon = 'fa-solid fa-faucet', label = 'Wash Hands'}}
+})
+```
+
+**Files:** fxmanifest.lua, config.lua, client/main.lua (234 lines), server/main.lua (137 lines)
 ---
 
 ### **7. Custom Discord Bots**
