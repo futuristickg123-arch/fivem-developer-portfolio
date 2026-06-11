@@ -167,6 +167,8 @@ exports.ox_target:addModel(Config.Objects, {
 - **Hawkkdown_LoadingScreen** - Custom loading screen
 - **hawkkdown_chains** - Hood-style chain snatching system with wearable props
 - **hawkkdown_gsr** - Gun Powder Residue (GSR) evidence system
+- **hawkkdown_nocrosshair** - Simple crosshair removal for immersive roleplay
+- **hawkkdown_gunjam** - Realistic weapon jamming system with progressive chances
 
 **Technical Highlights:**
 
@@ -260,7 +262,50 @@ exports.ox_target:addSphereZone({
 **Files:** fxmanifest.lua, config.lua, client/main.lua (234 lines), server/main.lua (137 lines)
 ---
 
-### **8. Custom Discord Bots**
+### **8. Hawkkdown Gun Jam System** (`[Hawkk]/hawkkdown_gunjam`)
+
+**Type:** Realistic Weapon Mechanics System
+
+**Features:**
+
+- Weapon-specific jam chances based on realism (pistols more reliable than cheap weapons)
+- Progressive jam chance that increases with each shot fired
+- Maximum jam chance cap to prevent frustration
+- Unjamming mechanics with progress bar animation
+- Press E or use /unjam command to fix jammed weapons
+- Anti-abuse protection (vehicle, dead, cuffed, combat restrictions)
+- Custom hood-style purple/black UI notifications
+- Admin command /resetjam [playerid] for troubleshooting
+- Server-side cleanup on player disconnect
+- Optimized performance with minimal resource impact
+
+**Technical Highlights:**
+
+```lua
+-- Progressive jam calculation
+local jamChance = Config.WeaponJamChances[weaponName]
+jamChance = jamChance + (shotsFired * Config.JamChance.perShotIncrease)
+jamChance = math.min(jamChance, Config.JamChance.maxChance)
+if math.random() < jamChance then
+    isJammed = true
+    DisableWeaponFire(true)
+end
+-- Unjamming with progress bar
+if lib.progressBar({
+    duration = Config.Unjamming.duration,
+    label = 'Unjamming Weapon...',
+    disable = {move = true, car = true, combat = true}
+}) then
+    isJammed = false
+    DisableWeaponFire(false)
+end
+```
+
+**Files:** fxmanifest.lua, config.lua, client/main.lua (180 lines), server/main.lua (25 lines)
+
+---
+
+### **9. Custom Discord Bots**
 
 **Type:** Advanced Discord Integration & Automation
 
@@ -364,7 +409,7 @@ exports.ox_target:addSphereZone({
 ## Collaboration & Communication
 
 - **Discord:** hawkkdown|hopeinmyhood_
-- **GitHub:** https://github.com/futuristickg123-arch/fivem-developer-portfolio
+- **GitHub:** https://github.com/Hawkkdown/fivem-developer-portfolio
 - **Availability:** EST/8/10
 - **Experience:** 3 years of FiveM development
 ---
